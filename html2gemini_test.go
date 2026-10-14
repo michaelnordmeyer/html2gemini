@@ -440,15 +440,15 @@ func TestLinkEscaping(t *testing.T) {
 	}{
 		{
 			`<a href="foo">display</a>`,
-			"display\n\n=> foo  display", //minor bug with extra space at present
+			"display\n\n=> foo  display", // minor bug with extra space at present
 		},
 		{
 			`<a href="foo spaced">display</a>`,
-			"display\n\n=> foo%20spaced  display", //minor bug with extra space at present
+			"display\n\n=> foo%20spaced  display", // minor bug with extra space at present
 		},
 		{
 			`<a href="foo?bar+baz">display</a>`,
-			"display\n\n=> foo?bar+baz  display", //minor bug with extra space at present
+			"display\n\n=> foo?bar+baz  display", // minor bug with extra space at present
 		},
 	}
 	for _, testCase := range testCases {
@@ -890,6 +890,7 @@ type RegexpStringMatcher string
 func (m RegexpStringMatcher) MatchString(str string) bool {
 	return regexp.MustCompile(string(m)).MatchString(str)
 }
+
 func (m RegexpStringMatcher) String() string {
 	return string(m)
 }
@@ -899,6 +900,7 @@ type ExactStringMatcher string
 func (m ExactStringMatcher) MatchString(str string) bool {
 	return string(m) == str
 }
+
 func (m ExactStringMatcher) String() string {
 	return string(m)
 }
@@ -1038,11 +1040,11 @@ Preformatted content    with    spaces
 	// +-------------+-------------+
 	// ```
 	//
-	//```
-	//Preformatted content    with    spaces
+	// ```
+	// Preformatted content    with    spaces
 	//    and indentation
 	//
-	//```
+	// ```
 	//
 	// => http://jaytaylor.com/ [1] http://jaytaylor.com/
 	// => https://example.com [2] https://example.com

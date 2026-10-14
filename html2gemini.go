@@ -20,14 +20,14 @@ type Options struct {
 	PrettyTables                bool                 // Turns on pretty ASCII rendering for table elements.
 	PrettyTablesOptions         *PrettyTablesOptions // Configures pretty ASCII rendering for table elements.
 	OmitLinks                   bool                 // Turns on omitting links
-	CitationStart               int                  //Start Citations from this number (default 1)
-	CitationMarkers             bool                 //use footnote style citation markers
-	LinkEmitFrequency           int                  //emit gathered links after approximately every n paras (otherwise when new heading, or blockquote)
+	CitationStart               int                  // Start Citations from this number (default 1)
+	CitationMarkers             bool                 // use footnote style citation markers
+	LinkEmitFrequency           int                  // emit gathered links after approximately every n paras (otherwise when new heading, or blockquote)
 	NumberedLinks               bool                 // number the links [1], [2] etc to match citation markers
-	EmitImagesAsLinks           bool                 //emit referenced images as links e.g. <img src=href>
-	ImageMarkerPrefix           string               //prefix when emitting images
-	EmptyLinkPrefix             string               //prefix when emitting empty links (e.g. <a href=foo><img src=bar></a>
-	ListItemToLinkWordThreshold int                  //max number of words in a list item having a single link that is converted to a plain gemini link
+	EmitImagesAsLinks           bool                 // emit referenced images as links e.g. <img src=href>
+	ImageMarkerPrefix           string               // prefix when emitting images
+	EmptyLinkPrefix             string               // prefix when emitting empty links (e.g. <a href=foo><img src=bar></a>
+	ListItemToLinkWordThreshold int                  // max number of words in a list item having a single link that is converted to a plain gemini link
 }
 
 // NewOptions creates Options with default settings
@@ -92,8 +92,7 @@ func NewPrettyTablesOptions() *PrettyTablesOptions {
 // FlushCitations emits a list of Gemini links gathered up to this point, if the para count exceeds the
 // emit frequency
 func (ctx *TextifyTraverseContext) CheckFlushCitations() {
-
-	//	if ctx.linkAccumulator.emitParaCount > ctx.options.LinkEmitFrequency &&  ctx.citationCount > 0 {
+	// if ctx.linkAccumulator.emitParaCount > ctx.options.LinkEmitFrequency &&  ctx.citationCount > 0 {
 	if ctx.linkAccumulator.emitParaCount > ctx.options.LinkEmitFrequency && len(ctx.linkAccumulator.linkArray) > (ctx.linkAccumulator.flushedToIndex+1) {
 		ctx.FlushCitations()
 	} else {
@@ -112,18 +111,17 @@ func (ctx *TextifyTraverseContext) ResetCitationCounters() {
 
 // FromHTMLNode renders text output from a pre-parsed HTML document.
 func FromHTMLNode(doc *html.Node, ctx TextifyTraverseContext) (string, error) {
-
 	if err := ctx.traverse(doc); err != nil {
 		return "", err
 	}
-	//flush any remaining citations at the end
+	// flush any remaining citations at the end
 	ctx.forceFlushGeminiCitations()
 
 	text := strings.TrimSpace(newlineRe.ReplaceAllString(
 		strings.Replace(ctx.buf.String(), "\n ", "\n", -1), "\n\n"),
 	)
 
-	//somewhat hacky tidying up of start and end of blockquotes
+	// somewhat hacky tidying up of start and end of blockquotes
 	startQuote := regexp.MustCompile(`\n *\n+> \n`)
 	text = startQuote.ReplaceAllString(text, "\n\n")
 	endQuote := regexp.MustCompile(`\n> \n\n+`)
@@ -215,12 +213,10 @@ func (tableCtx *tableTraverseContext) init() {
 }
 
 func NewTraverseContext(options Options) *TextifyTraverseContext {
+	// no options provided we need to set some default options for non-zero types
 
-	//no options provided we need to set some default options for non-zero
-	//types.
-
-	//start links at 1, not 0 if not specified
-	options.CitationStart = 1 //otherwise uses zero value which is 0
+	// start links at 1, not 0 if not specified
+	options.CitationStart = 1 // otherwise uses zero value which is 0
 
 	var ctx = TextifyTraverseContext{
 		buf:     bytes.Buffer{},
@@ -231,6 +227,7 @@ func NewTraverseContext(options Options) *TextifyTraverseContext {
 
 	return &ctx
 }
+
 func (ctx *TextifyTraverseContext) handleElement(node *html.Node) error {
 	ctx.justClosedDiv = false
 
@@ -241,7 +238,6 @@ func (ctx *TextifyTraverseContext) handleElement(node *html.Node) error {
 		return ctx.emit("\n")
 
 	case atom.H1, atom.H2, atom.H3:
-
 		if node.DataAtom == atom.H1 {
 			ctx.FlushCitations()
 			prefix = "# "
@@ -264,15 +260,15 @@ func (ctx *TextifyTraverseContext) handleElement(node *html.Node) error {
 
 	case atom.Blockquote:
 		ctx.FlushCitations()
-		//if err := ctx.emit("\n"); err != nil {
-		//	return err
+		// if err := ctx.emit("\n"); err != nil {
+		// return err
 		//}
 		ctx.blockquoteLevel++
 		ctx.prefix = strings.Repeat(">", ctx.blockquoteLevel) + " "
-		//if ctx.blockquoteLevel == 1 {
-		//	if err := ctx.emit("\n"); err != nil {
-		//		return err
-		//	}
+		// if ctx.blockquoteLevel == 1 {
+		// if err := ctx.emit("\n"); err != nil {
+		// 	return err
+		// }
 		//}
 		if err := ctx.traverseChildren(node); err != nil {
 			return err
@@ -282,11 +278,10 @@ func (ctx *TextifyTraverseContext) handleElement(node *html.Node) error {
 		if ctx.blockquoteLevel > 0 {
 			ctx.prefix += " "
 		}
-		//return ctx.emit("\n\n")
+		// return ctx.emit("\n\n")
 		return ctx.emit("")
 
 	case atom.Div:
-
 		if ctx.lineLength > 0 {
 			if err := ctx.emit("\n"); err != nil {
 				return err
@@ -303,27 +298,26 @@ func (ctx *TextifyTraverseContext) handleElement(node *html.Node) error {
 		return err
 
 	case atom.Li:
-
-		//a test context to examine the list element to see if it just has a single link
-		//in which case we'll output a link line, or no links in which case we output just a bullet
+		// a test context to examine the list element to see if it just has a single link
+		// in which case we'll output a link line, or no links in which case we output just a bullet
 		testCtx := TextifyTraverseContext{}
 		if err := testCtx.traverseChildren(node); err != nil {
 			return err
 		}
 
-		//if content contains just one link, output a link instead of a bullet if within a specified number of
-		//words
+		// if content contains just one link, output a link instead of a bullet if within a specified number of
+		// words
 		maxSingletonLinkLength := ctx.options.ListItemToLinkWordThreshold
 		if (len(strings.Split(testCtx.buf.String(), " ")) < maxSingletonLinkLength) && (len(testCtx.linkAccumulator.linkArray) == 1) {
 			return ctx.emit("=> " + testCtx.linkAccumulator.linkArray[0].url + " " + testCtx.buf.String() + "\n")
 		}
 
-		//if no links, just emit a bullet with the text, ignoring any sub elements
+		// if no links, just emit a bullet with the text, ignoring any sub elements
 		if len(testCtx.linkAccumulator.linkArray) == 0 {
 			return ctx.emit("* " + testCtx.buf.String() + "\n")
 		}
 
-		//otherwise is mixed content, so keep traversing
+		// otherwise is mixed content, so keep traversing
 		if err := ctx.emit("* "); err != nil {
 			return err
 		}
@@ -335,14 +329,14 @@ func (ctx *TextifyTraverseContext) handleElement(node *html.Node) error {
 		return ctx.emit("\n")
 
 	case atom.Img:
-		//output images with a link to the image
+		// output images with a link to the image
 		hrefLink := ""
 		altText := ""
 		if altText = getAttrVal(node, "alt"); altText != "" {
 			altText = altText
 		} else {
 			if src := getAttrVal(node, "src"); src != "" {
-				//try to ge the last element of the path
+				// try to ge the last element of the path
 				fileName := filepath.Base(src)
 				fileBase := strings.TrimSuffix(fileName, filepath.Ext(fileName))
 				altText = fileBase
@@ -399,31 +393,30 @@ func (ctx *TextifyTraverseContext) handleElement(node *html.Node) error {
 		return ctx.emit(hrefLink)
 
 	case atom.Ul:
-
 		return ctx.paragraphHandler(node)
 
 	case atom.P:
 
-		//a test context to examine the list element to see if it just has a single link
-		//in which case we'll output a link line, or no links in which case we output just a bullet
+		// a test context to examine the list element to see if it just has a single link
+		// in which case we'll output a link line, or no links in which case we output just a bullet
 		testCtx := TextifyTraverseContext{}
 		if err := testCtx.traverseChildren(node); err != nil {
 			return err
 		}
 
-		//if content contains just one link, output a link instead of a para if within a specified number of
-		//words
+		// if content contains just one link, output a link instead of a para if within a specified number of
+		// words
 		maxSingletonLinkLength := ctx.options.ListItemToLinkWordThreshold
 		if (len(strings.Split(testCtx.buf.String(), " ")) < maxSingletonLinkLength) && (len(testCtx.linkAccumulator.linkArray) == 1) {
 			return ctx.emit("=> " + testCtx.linkAccumulator.linkArray[0].url + " " + testCtx.buf.String() + "\n")
 		}
 
-		//if no links, just emit a para with the text, ignoring any sub elements
+		// if no links, just emit a para with the text, ignoring any sub elements
 		if len(testCtx.linkAccumulator.linkArray) == 0 {
 			return ctx.emit(testCtx.buf.String() + "\n")
 		}
 
-		//else - mixed content
+		// else - mixed content
 		return ctx.paragraphHandler(node)
 
 	case atom.Table, atom.Tfoot, atom.Th, atom.Tr, atom.Td:
@@ -431,13 +424,13 @@ func (ctx *TextifyTraverseContext) handleElement(node *html.Node) error {
 		if ctx.options.PrettyTables {
 			return ctx.handleTableElement(node)
 		} else if node.DataAtom == atom.Table {
-			//just treat tables as a type of paragraph
+			// just treat tables as a type of paragraph
 			ctx.emit("\n\n⊞ table ⊞\n\n")
 			return ctx.paragraphHandler(node)
 		}
 
 		if node.DataAtom == atom.Tr {
-			//start a new line
+			// start a new line
 			ctx.emit("\n")
 		}
 
@@ -486,7 +479,6 @@ func (ctx *TextifyTraverseContext) handleTableElement(node *html.Node) error {
 
 	switch node.DataAtom {
 	case atom.Table:
-
 		if ctx.linkAccumulator.tableNestLevel == 0 {
 			if err := ctx.emit("\n\n```\n"); err != nil {
 				return err
@@ -579,7 +571,6 @@ func (ctx *TextifyTraverseContext) handleTableElement(node *html.Node) error {
 		} else {
 			ctx.tableCtx.body[ctx.tableCtx.tmpRow] = append(ctx.tableCtx.body[ctx.tableCtx.tmpRow], res)
 		}
-
 	}
 	return nil
 }
@@ -632,6 +623,7 @@ func punctNoSpaceAfter(r rune) bool {
 		return false
 	}
 }
+
 func (ctx *TextifyTraverseContext) emit(data string) error {
 	if data == "" {
 		return nil
@@ -679,13 +671,11 @@ func formatGeminiCitation(idx int, showMarker bool) string {
 	} else {
 		return ""
 	}
-
 }
 
 func (ctx *TextifyTraverseContext) addGeminiCitation(url string, display string) string {
-
 	if url[0:1] == "#" {
-		//dont emit bookmarks to the same page (url starts #)
+		// don't emit bookmarks to the same page (url starts #)
 		return ""
 	} else {
 		citation := citationLink{
@@ -694,34 +684,32 @@ func (ctx *TextifyTraverseContext) addGeminiCitation(url string, display string)
 			url:     url,
 		}
 
-		//spaces would mess up the gemini link, so check for them
+		// spaces would mess up the gemini link, so check for them
 		if strings.Contains(citation.url, " ") {
-			//escape the spaces
+			// escape the spaces
 			citation.url = strings.ReplaceAll(citation.url, " ", "%20")
 
 		}
 		ctx.linkAccumulator.linkArray = append(ctx.linkAccumulator.linkArray, citation)
 		return formatGeminiCitation(citation.index, ctx.options.CitationMarkers)
 	}
-
 }
 
+// this function writes to the buffer directly instead of using `emit`, b/c we do not want to split long links
 func (ctx *TextifyTraverseContext) forceFlushGeminiCitations() {
-	// this method writes to the buffer directly instead of using `emit`, b/c we do not want to split long links
-
 	if ctx.linkAccumulator.tableNestLevel > 0 {
-		//dont emit citation list inside a table
+		// don't emit citation list inside a table
 		return
 	}
 
 	ctx.buf.WriteString("\n")
 
-	//ctx.buf.WriteString("flushedtoindex: ")
-	//ctx.buf.WriteString(formatGeminiCitation(ctx.linkAccumulator.flushedToIndex))
+	// ctx.buf.WriteString("flushedtoindex: ")
+	// ctx.buf.WriteString(formatGeminiCitation(ctx.linkAccumulator.flushedToIndex))
 	ctx.buf.WriteByte('\n')
 
 	for i, link := range ctx.linkAccumulator.linkArray {
-		//	ctx.buf.WriteString(formatGeminiCitation(i))
+		// ctx.buf.WriteString(formatGeminiCitation(i))
 
 		if i > ctx.linkAccumulator.flushedToIndex {
 			ctx.buf.WriteString("=> ")
@@ -737,12 +725,11 @@ func (ctx *TextifyTraverseContext) forceFlushGeminiCitations() {
 	ctx.buf.WriteByte('\n')
 
 	ctx.ResetCitationCounters()
-
 }
-func (ctx *TextifyTraverseContext) emitGeminiCitations() {
 
+func (ctx *TextifyTraverseContext) emitGeminiCitations() {
 	if len(ctx.linkAccumulator.linkArray) > ctx.linkAccumulator.flushedToIndex {
-		//there are unflushed links
+		// there are unflushed links
 		ctx.forceFlushGeminiCitations()
 	}
 }
