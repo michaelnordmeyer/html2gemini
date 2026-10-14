@@ -30,7 +30,7 @@ type Options struct {
 	ListItemToLinkWordThreshold int                  //max number of words in a list item having a single link that is converted to a plain gemini link
 }
 
-//NewOptions creates Options with default settings
+// NewOptions creates Options with default settings
 func NewOptions() *Options {
 	return &Options{
 		PrettyTables:                false,

@@ -3,7 +3,6 @@ package html2gemini
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"regexp"
@@ -45,7 +44,7 @@ func TestParseUTF8(t *testing.T) {
 	}
 
 	for _, htmlFile := range htmlFiles {
-		bs, err := ioutil.ReadFile(path.Join(destPath, htmlFile.file))
+		bs, err := os.ReadFile(path.Join(destPath, htmlFile.file))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -208,7 +207,7 @@ func TestTables(t *testing.T) {
 
 Row-1-Col-1-Msg2
 
-Row-1-Col-2 Row-2-Col-1 Row-2-Col-2` ,
+Row-1-Col-2 Row-2-Col-1 Row-2-Col-2`,
 		},
 		{
 			`<table>
@@ -386,7 +385,6 @@ func TestStrippingLists(t *testing.T) {
 	}
 }
 
-
 func TestOmitLinks(t *testing.T) {
 	testCases := []struct {
 		input  string
@@ -442,15 +440,15 @@ func TestLinkEscaping(t *testing.T) {
 	}{
 		{
 			`<a href="foo">display</a>`,
-			"display\n\n=> foo  display",		//minor bug with extra space at present
+			"display\n\n=> foo  display", //minor bug with extra space at present
 		},
 		{
 			`<a href="foo spaced">display</a>`,
-			"display\n\n=> foo%20spaced  display",		//minor bug with extra space at present
+			"display\n\n=> foo%20spaced  display", //minor bug with extra space at present
 		},
 		{
 			`<a href="foo?bar+baz">display</a>`,
-			"display\n\n=> foo?bar+baz  display",		//minor bug with extra space at present
+			"display\n\n=> foo?bar+baz  display", //minor bug with extra space at present
 		},
 	}
 	for _, testCase := range testCases {
@@ -1030,7 +1028,7 @@ Preformatted content    with    spaces
 	// * Something else
 	//
 	// ```
-    // +-------------+-------------+
+	// +-------------+-------------+
 	// |  HEADER 1   |  HEADER 2   |
 	// +-------------+-------------+
 	// | Row 1 Col 1 | Row 1 Col 2 |
@@ -1038,15 +1036,15 @@ Preformatted content    with    spaces
 	// +-------------+-------------+
 	// |  FOOTER 1   |  FOOTER 2   |
 	// +-------------+-------------+
-    // ```
-    //
-    //```
-    //Preformatted content    with    spaces
-    //    and indentation
-    //
-    //```
-    //
-    // => http://jaytaylor.com/ [1] http://jaytaylor.com/
-    // => https://example.com [2] https://example.com
-    // => https://example2.com [3] https://example2.com
+	// ```
+	//
+	//```
+	//Preformatted content    with    spaces
+	//    and indentation
+	//
+	//```
+	//
+	// => http://jaytaylor.com/ [1] http://jaytaylor.com/
+	// => https://example.com [2] https://example.com
+	// => https://example2.com [3] https://example2.com
 }
